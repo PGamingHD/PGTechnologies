@@ -34,7 +34,6 @@ module.exports = client;
 
 //           --------------------<MODULE EXPORTS>--------------------
 
-
 //           --------------------<GLOBAL VARIABLES CONSTRUCTION>--------------------
 client.slashCommands = new Collection();
 client.config = require("./botconfig/config.json");

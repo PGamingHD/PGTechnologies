@@ -9,11 +9,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/local-auth": "^2.1.0",
     "@napi-rs/canvas": "^0.1.34",
     "axios": "^1.2.3",
     "discord.js": "^14.7.1",
     "flakeid": "^1.0.0",
     "glob": "^7.1.1",
+    "googleapis": "^105.0.0",
     "mongoose": "^6.6.5"
   }
 }

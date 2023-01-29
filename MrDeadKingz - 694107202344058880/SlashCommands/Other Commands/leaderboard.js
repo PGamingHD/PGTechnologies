@@ -6,6 +6,7 @@ const {
 const ee = require("../../botconfig/embed.json");
 const axios = require("axios");
 const userData = require("../../schemas/userData");
+const config = require("../../botconfig/config.json");
 require('dotenv').config();
 
 module.exports = {
@@ -39,9 +40,10 @@ module.exports = {
             return await interaction.reply({
                 embeds: [
                     new EmbedBuilder()
-                    .setColor(ee.color)
-                    .setTitle('🧮 Largest Amount Donated 🧮')
+                    .setColor(config.Leaderboard_System.Leaderboard_Embed.color)
+                    .setTitle(config.Leaderboard_System.Leaderboard_Embed.title)
                     .addFields(newConstructor)
+                    .setFooter({text: config.Leaderboard_System.Leaderboard_Embed.footer.text, iconURL: config.Leaderboard_System.Leaderboard_Embed.footer.iconURL})
                     .setTimestamp()
                 ]
             })
@@ -49,9 +51,9 @@ module.exports = {
             return await interaction.reply({
                 embeds: [
                     new EmbedBuilder()
-                    .setColor(ee.errorColor)
-                    .setTitle(':x: No Donations Found :x:')
-                    .setDescription('*It looks like there have been no donations yet.*')
+                    .setColor(config.Leaderboard_System.Leaderboard_Embed_NOTFOUND.color)
+                    .setTitle(config.Leaderboard_System.Leaderboard_Embed_NOTFOUND.title)
+                    .setDescription(config.Leaderboard_System.Leaderboard_Embed_NOTFOUND.description)
                     .setTimestamp()
                 ]
             })

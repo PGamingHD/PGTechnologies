@@ -270,5 +270,22 @@
                 "required": true
             }
         }
+    },
+
+    "Leaderboard_System": {
+        "Leaderboard_Embed": {
+            "title": "🧮 Largest Amount Donated 🧮",
+            "color": 2161667,
+            "footer": {
+                "text": "Footer text here",
+                "iconURL": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/-Insert_image_here-.svg/800px--Insert_image_here-.svg.png"
+            }
+        },
+
+        "Leaderboard_Embed_NOTFOUND": {
+            "title": ":x: No Donations Found :x:",
+            "description": "*It looks like there have been no donations yet.*",
+            "color": 16711680
+        }
     }
 }
