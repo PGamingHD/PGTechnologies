@@ -1,11 +1,20 @@
 {
     "accessRoles": [],
+    "mainPrefix": "v!",
 
     "status": {
         "text": "trades",
         "type": "WATCHING",
         "_COMMENT_": "VALID TYPES: WATCHING, PLAYING, STREAMING, LISTENING",
         "url": "https://twitch.tv/PGamingJR"
+    },
+
+    "Discount_System": {
+        "discount_2%": "1069340439632695386",
+        "discount_4%": "1069340453452914718",
+        "discount_6%": "1069340465457012926",
+        "discount_10%": "1069340478467735686",
+        "discount_15%": "1069340496167702761"
     },
 
     "Announce_System": {
@@ -286,6 +295,35 @@
             "title": ":x: No Donations Found :x:",
             "description": "*It looks like there have been no donations yet.*",
             "color": 16711680
+        }
+    },
+
+    "Skill_System": {
+        "Skill_Embed": {
+            "color": 2161667,
+            "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/-Insert_image_here-.svg/800px--Insert_image_here-.svg.png",
+            "gold_icon": "<:gold:1069288396926750880>",
+            "money_icon": "<:dollar:1069289195404800030>",
+            "xp_icon": "<:xp:1069290793564639292>",
+            "calculator_icon": ":abacus:",
+            "footer": {
+                "text": "Footer text here",
+                "iconURL": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/-Insert_image_here-.svg/800px--Insert_image_here-.svg.png"
+            }
+        }
+    },
+
+    "Quest_System": {
+        "Quest_Embed": {
+            "title": "Quest Calculator",
+            "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/-Insert_image_here-.svg/800px--Insert_image_here-.svg.png",
+            "color": 2161667,
+            "gold_icon": "<:gold:1069288396926750880>",
+            "money_icon": "<:dollar:1069289195404800030>",
+            "footer": {
+                "text": "Footer text here",
+                "iconURL": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/-Insert_image_here-.svg/800px--Insert_image_here-.svg.png"
+            }
         }
     }
 }

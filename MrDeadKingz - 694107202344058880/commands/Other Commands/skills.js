@@ -1,48 +1,49 @@
 const {
+    Message,
     Client,
-    EmbedBuilder,
-    ApplicationCommandOptionType
-} = require("discord.js");
-const ee = require("../../botconfig/embed.json");
-const axios = require("axios");
-const userData = require("../../schemas/userData");
-const config = require("../../botconfig/config.json");
+    EmbedBuilder
+} = require('discord.js');
+const config = require('../../botconfig/config.json');
 const authorize = require("../../handler/authenticate");
 const {
     google
 } = require('googleapis');
-require('dotenv').config();
-
+ 
 module.exports = {
-    name: 'checkskill',
-    description: 'Check how much the skill would be in BTC!',
-    options: [{
-        name: 'skill',
-        description: 'The skill you want to view the price of',
-        type: ApplicationCommandOptionType.String,
-        required: true
-    }, {
-        name: 'from_level',
-        description: 'From what level you want to check',
-        type: ApplicationCommandOptionType.Integer,
-        required: true
-    }, {
-        name: 'to_level',
-        description: 'To what level you want to check',
-        type: ApplicationCommandOptionType.Integer,
-        required: true
-    }],
-    /** 
-     * @param {Client} client 
-     * @param {Message} message 
-     * @param {String[]} args 
+    name: 'skills',
+    aliases: ['s', 'skill', 'calculateskill'],
+    /**
+     *
+     * @param {Client} client
+     * @param {Message} message
+     * @param {String[]} args
      */
-    run: async (client, interaction, args) => {
-        const skill = interaction.options.getString('skill');
-        const fromLevel = interaction.options.getInteger('from_level');
-        const toLevel = interaction.options.getInteger('to_level');
+    run: async (client, message, args) => {
+        let skill = args[0];
+        const levels = args[1];
 
-        const actualSkill = skill.replaceAll(' ', '');
+        if (!skill || !levels) {
+            return await message.reply({
+                content: ':x: Please enter a valid skill & levels to continue (Levels display: 1-99)',
+                ephemeral: true
+            });
+        }
+
+        skill = args[0].toLowerCase();
+
+        const levelsSplit = levels.split('-');
+
+        const fromLevel = levelsSplit[0];
+        const toLevel = levelsSplit[1];
+
+        if (!fromLevel || !toLevel) {
+            return await message.reply({
+                content: ':x: Please enter valid numbers between 1-99 to display skill calculations!',
+                ephemeral: true
+            });
+        }
+
+        const actualSkill =  skill; //skill.replaceAll(' ', ''); INTERACTION REMAKE
 
         const XPArray = [
             0,
@@ -147,8 +148,8 @@ module.exports = {
         ]
 
         if (isNaN(fromLevel) || isNaN(toLevel)) {
-            return await interaction.reply({
-                content: ':x: From_level and To_level must be valid numbers!',
+            return await message.reply({
+                content: ':x: Values display from level and to level must be valid numbers ONLY!',
                 ephemeral: true
             });
         }
@@ -157,7 +158,7 @@ module.exports = {
         const to_level = parseInt(toLevel);
 
         if (from_level < 1 || from_level >= 100 || to_level >= 100 || to_level <= 1 || from_level >= to_level) {
-            return await interaction.reply({
+            return await message.reply({
                 content: ':x: The specific number range is now allowed, from level must be 1-99 and to-level must be 2-99. from_level must also be higher and not equal to to_level!',
                 ephemeral: true
             });
@@ -171,12 +172,12 @@ module.exports = {
         });
 
         const res = await sheets.spreadsheets.values.get({
-            spreadsheetId: '1H_CDTgFzHx0beK_--St5Q9-bbcly-WSUHil_VJtWi68',
+            spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Skill Calc!A2:L',
         });
 
         const btcRes = await sheets.spreadsheets.values.get({
-            spreadsheetId: '1H_CDTgFzHx0beK_--St5Q9-bbcly-WSUHil_VJtWi68',
+            spreadsheetId: process.env.SPREADSHEET_ID,
             range: 'Config!A2:B',
         });
 
@@ -189,7 +190,24 @@ module.exports = {
             BTCrate = parseFloat(row[1])
         });
 
-        console.log(BTCrate)
+        let discountPrice = 0.0;
+        let discount = 0;
+        if (message.member.roles.cache.has(config.Discount_System["discount_15%"])) {
+            discountPrice = 0.15;
+            discount = 15;
+        } else if (message.member.roles.cache.has(config.Discount_System["discount_10%"])) {
+            discountPrice = 0.10;
+            discount = 10;
+        } else if (message.member.roles.cache.has(config.Discount_System["discount_6%"])) {
+            discountPrice = 0.06;
+            discount = 6;
+        } else if (message.member.roles.cache.has(config.Discount_System["discount_4%"])) {
+            discountPrice = 0.04;
+            discount = 4;
+        } else if (message.member.roles.cache.has(config.Discount_System["discount_2%"])) {
+            discountPrice = 0.02;
+            discount = 2;
+        }
 
         let skillRow = undefined;
         let startLevel = undefined;
@@ -224,7 +242,7 @@ module.exports = {
         }
 
         if (!skillRow || !startLevel || !endLevel || !gpxp || !method) {
-            return await interaction.reply({
+            return await message.reply({
                 content: ':x: No skill could be found with the inserted arguments!',
                 ephemeral: true
             });
@@ -256,12 +274,11 @@ module.exports = {
             inline: true
         }, {
             name: '__**Discount**__',
-            value: `\`\`\`DISCOUNTHERE\`\`\``,
+            value: `\`\`\`${discount === 0 ? "No Discount" : discount + "% Applied"}\`\`\``,
             inline: true
         }];
 
         for (let i = 0; i < skillRow.length; i++) {
-            //console.log(skillRow.length)
             
             let mainMethod = skillRow[i];
             let methodName = method[i];
@@ -302,12 +319,12 @@ module.exports = {
                 let secondXPCalculation = XPArray[secondEndingLevel - 1] - XPArray[secondStartingLevel - 1];
                 let thirdXPCalculation = XPArray[thirdEndingLevel - 1] - XPArray[thirdStartingLevel - 1];
 
-                firstOne = `🧮 **${startingLevel}-${endingLevel}** - *${methodName}*\n\`${goldCostXP}gp/xp\` \`${XPCalculation.toLocaleString('en-US')}\` \`${(goldCostXP * XPCalculation / 1000000).toFixed(2)}M\`\n`;
-                secondOne = `🧮 **${secondStartingLevel}-${secondEndingLevel}** - *${secondMethodName}*\n\`${secondGoldCostXP}gp/xp\` \`${secondXPCalculation.toLocaleString('en-US')}\` \`${(secondGoldCostXP * secondXPCalculation / 1000000).toFixed(2)}M\`\n`;
-                thirdOne = `🧮 **${thirdStartingLevel}-${thirdEndingLevel}** - *${thirdMethodName}*\n\`${thirdGoldCostXP}gp/xp\` \`${thirdXPCalculation.toLocaleString('en-US')}\` \`${(thirdGoldCostXP * thirdXPCalculation / 1000000).toFixed(2)}M\`\n`;
-                let totalMoneyOne = `**${((goldCostXP * XPCalculation / 1000000)).toFixed(2)}M**ㅤㅤ**${((goldCostXP * XPCalculation / 1000000 * BTCrate)).toFixed(2)}$**`;
-                let totalMoneyTwo = `**${((goldCostXP * XPCalculation / 1000000) + (secondGoldCostXP * secondXPCalculation / 1000000)).toFixed(2)}M**ㅤㅤ**${((goldCostXP * XPCalculation / 1000000 * BTCrate) + (secondGoldCostXP * secondXPCalculation / 1000000 * BTCrate)).toFixed(2)}$**`;
-                let totalMoneyThree = `**${((goldCostXP * XPCalculation / 1000000) + (secondGoldCostXP * secondXPCalculation / 1000000) + (thirdGoldCostXP * thirdXPCalculation / 1000000)).toFixed(2)}M**ㅤㅤ**${((goldCostXP * XPCalculation / 1000000 * BTCrate) + (secondGoldCostXP * secondXPCalculation / 1000000 * BTCrate) + (thirdGoldCostXP * thirdXPCalculation / 1000000 * BTCrate)).toFixed(2)}$**`;
+                firstOne = `${config.Skill_System.Skill_Embed.calculator_icon} **${startingLevel}-${endingLevel}** - *${methodName === undefined ? "No name" : methodName}*\n\`${goldCostXP}gp/xp\` ${config.Skill_System.Skill_Embed.xp_icon} \`${XPCalculation.toLocaleString('en-US')}\` ${config.Skill_System.Skill_Embed.gold_icon} \`${(goldCostXP * XPCalculation / 1000000).toFixed(2)}M\`\n`;
+                secondOne = `${config.Skill_System.Skill_Embed.calculator_icon} **${secondStartingLevel}-${secondEndingLevel}** - *${secondMethodName === undefined ? "No name" : secondMethodName}*\n\`${secondGoldCostXP}gp/xp\` ${config.Skill_System.Skill_Embed.xp_icon} \`${secondXPCalculation.toLocaleString('en-US')}\` ${config.Skill_System.Skill_Embed.gold_icon} \`${(secondGoldCostXP * secondXPCalculation / 1000000).toFixed(2)}M\`\n`;
+                thirdOne = `${config.Skill_System.Skill_Embed.calculator_icon} **${thirdStartingLevel}-${thirdEndingLevel}** - *${thirdMethodName === undefined ? "No name" : thirdMethodName}*\n\`${thirdGoldCostXP}gp/xp\` ${config.Skill_System.Skill_Embed.xp_icon} \`${thirdXPCalculation.toLocaleString('en-US')}\` ${config.Skill_System.Skill_Embed.gold_icon} \`${(thirdGoldCostXP * thirdXPCalculation / 1000000).toFixed(2)}M\`\n`;
+                let totalMoneyOne = `${config.Skill_System.Skill_Embed.gold_icon} **${((goldCostXP * XPCalculation / 1000000)).toFixed(2)}M**ㅤㅤ${config.Skill_System.Skill_Embed.money_icon} **${((goldCostXP * XPCalculation / 1000000 * BTCrate) - (goldCostXP * XPCalculation / 1000000 * BTCrate) * discountPrice).toFixed(2)}$**`;
+                let totalMoneyTwo = `${config.Skill_System.Skill_Embed.gold_icon} **${((goldCostXP * XPCalculation / 1000000) + (secondGoldCostXP * secondXPCalculation / 1000000)).toFixed(2)}M**ㅤㅤ${config.Skill_System.Skill_Embed.money_icon} **${(((goldCostXP * XPCalculation / 1000000 * BTCrate) + (secondGoldCostXP * secondXPCalculation / 1000000 * BTCrate)) - ((goldCostXP * XPCalculation / 1000000 * BTCrate) + (secondGoldCostXP * secondXPCalculation / 1000000 * BTCrate)) * discountPrice).toFixed(2)}$**`;
+                let totalMoneyThree = `${config.Skill_System.Skill_Embed.gold_icon} **${((goldCostXP * XPCalculation / 1000000) + (secondGoldCostXP * secondXPCalculation / 1000000) + (thirdGoldCostXP * thirdXPCalculation / 1000000)).toFixed(2)}M**ㅤㅤ${config.Skill_System.Skill_Embed.money_icon} **${(((goldCostXP * XPCalculation / 1000000 * BTCrate) + (secondGoldCostXP * secondXPCalculation / 1000000 * BTCrate) + (thirdGoldCostXP * thirdXPCalculation / 1000000 * BTCrate)) - ((goldCostXP * XPCalculation / 1000000 * BTCrate) + (secondGoldCostXP * secondXPCalculation / 1000000 * BTCrate) + (thirdGoldCostXP * thirdXPCalculation / 1000000 * BTCrate)) * discountPrice).toFixed(2)}$**`;
 
                 if (startingLevel >= to_level) {
                     firstOne = "";
@@ -367,10 +384,10 @@ module.exports = {
                 let XPCalculation = XPArray[endingLevel - 1] - XPArray[startingLevel - 1];
                 let secondXPCalculation = XPArray[secondEndingLevel - 1] - XPArray[secondStartingLevel - 1];
 
-                firstOne = `🧮 **${startingLevel}-${endingLevel}** - *${methodName}*\n\`${goldCostXP}gp/xp\` \`${XPCalculation.toLocaleString('en-US')}\` \`${(goldCostXP * XPCalculation / 1000000).toFixed(2)}M\`\n`;
-                secondOne = `🧮 **${secondStartingLevel}-${secondEndingLevel}** - *${secondMethodName}*\n\`${secondGoldCostXP}gp/xp\` \`${secondXPCalculation.toLocaleString('en-US')}\` \`${(secondGoldCostXP * secondXPCalculation / 1000000).toFixed(2)}M\`\n`;
-                let totalMoneyOne = `**${((goldCostXP * XPCalculation / 1000000)).toFixed(2)}M**ㅤㅤ**${((goldCostXP * XPCalculation / 1000000 * BTCrate)).toFixed(2)}$**`;
-                let totalMoneyTwo = `**${((goldCostXP * XPCalculation / 1000000) + (secondGoldCostXP * secondXPCalculation / 1000000)).toFixed(2)}M**ㅤㅤ**${((goldCostXP * XPCalculation / 1000000 * BTCrate) + (secondGoldCostXP * secondXPCalculation / 1000000 * BTCrate)).toFixed(2)}$**`;
+                firstOne = `${config.Skill_System.Skill_Embed.calculator_icon} **${startingLevel}-${endingLevel}** - *${methodName === undefined ? "No name" : methodName}*\n\`${goldCostXP}gp/xp\` ${config.Skill_System.Skill_Embed.xp_icon} \`${XPCalculation.toLocaleString('en-US')}\` ${config.Skill_System.Skill_Embed.gold_icon} \`${(goldCostXP * XPCalculation / 1000000).toFixed(2)}M\`\n`;
+                secondOne = `${config.Skill_System.Skill_Embed.calculator_icon} **${secondStartingLevel}-${secondEndingLevel}** - *${secondMethodName === undefined ? "No name" : secondMethodName}*\n\`${secondGoldCostXP}gp/xp\` ${config.Skill_System.Skill_Embed.xp_icon} \`${secondXPCalculation.toLocaleString('en-US')}\` ${config.Skill_System.Skill_Embed.gold_icon} \`${(secondGoldCostXP * secondXPCalculation / 1000000).toFixed(2)}M\`\n`;
+                let totalMoneyOne = `${config.Skill_System.Skill_Embed.gold_icon} **${((goldCostXP * XPCalculation / 1000000)).toFixed(2)}M**ㅤㅤ${config.Skill_System.Skill_Embed.money_icon} **${((goldCostXP * XPCalculation / 1000000 * BTCrate) - (goldCostXP * XPCalculation / 1000000 * BTCrate) * discountPrice).toFixed(2)}$**`;
+                let totalMoneyTwo = `${config.Skill_System.Skill_Embed.gold_icon} **${((goldCostXP * XPCalculation / 1000000) + (secondGoldCostXP * secondXPCalculation / 1000000)).toFixed(2)}M**ㅤㅤ${config.Skill_System.Skill_Embed.money_icon} **${(((goldCostXP * XPCalculation / 1000000 * BTCrate) + (secondGoldCostXP * secondXPCalculation / 1000000 * BTCrate)) - ((goldCostXP * XPCalculation / 1000000 * BTCrate) + (secondGoldCostXP * secondXPCalculation / 1000000 * BTCrate)) * discountPrice).toFixed(2)}$**`;
 
                 if (startingLevel >= to_level) {
                     firstOne = "";
@@ -412,102 +429,30 @@ module.exports = {
                     continue;
                 }
 
+                if (startingLevel < from_level) {
+                    continue;
+                }
+
                 let XPCalculation = XPArray[endingLevel - 1] - XPArray[startingLevel - 1];
     
                 addFields.push({
                     name: `**${mainMethod}**`,
-                    value: `🧮 **${startingLevel}-${endingLevel}** - *${methodName}*\n\`${goldCostXP}gp/xp\` \`${XPCalculation.toLocaleString('en-US')}\` \`${(goldCostXP * XPCalculation / 1000000).toFixed(2)}M\`\n**${(goldCostXP * XPCalculation / 1000000).toFixed(2)}M**ㅤㅤ**${(goldCostXP * XPCalculation / 1000000 * BTCrate).toFixed(2)}$**`
+                    value: `${config.Skill_System.Skill_Embed.calculator_icon} **${startingLevel}-${endingLevel}** - *${methodName === undefined ? "No name" : methodName}*\n\`${goldCostXP}gp/xp\` ${config.Skill_System.Skill_Embed.xp_icon} \`${XPCalculation.toLocaleString('en-US')}\` ${config.Skill_System.Skill_Embed.gold_icon} \`${(goldCostXP * XPCalculation / 1000000).toFixed(2)}M\`\n${config.Skill_System.Skill_Embed.gold_icon} **${(goldCostXP * XPCalculation / 1000000).toFixed(2)}M**ㅤㅤ${config.Skill_System.Skill_Embed.money_icon} **${((goldCostXP * XPCalculation / 1000000 * BTCrate) - (goldCostXP * XPCalculation / 1000000 * BTCrate) * discountPrice).toFixed(2)}$**`
                 });
                 continue;
             }
-            /*if (endingLevel < to_level) {
-                let secondMethodName = method[i + 1].replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
-                let secondGoldCostXP = gpxp[i + 1];
-                let secondStartingLevel = startLevel[i + 1];
-                let secondEndingLevel = endLevel[i + 1];
-                let secondXPCalculation = XPArray[secondEndingLevel - 1] - XPArray[secondStartingLevel - 1];
-
-                if (secondEndingLevel > to_level) {
-                    secondEndingLevel = to_level;
-                }
-    
-                if (secondStartingLevel < from_level) {
-                    secondStartingLevel = from_level;
-                }
-
-                if (endLevel[i + 1] < from_level) {
-                    continue;
-                }
-    
-                if (startLevel[i + 1] > to_level) {
-                    continue;
-                }
-
-                addFields.push({name: `**${mainMethod}**`, value: `🧮 **${startingLevel}-${endingLevel}** - *${methodName}*\n\`${goldCostXP}gp/xp\` \`${XPCalculation.toLocaleString('en-US')}\` \`${(goldCostXP * XPCalculation / 1000000).toFixed(2)}M\`\n🧮 **${secondStartingLevel}-${secondEndingLevel}** - *${secondMethodName}*\n\`${secondGoldCostXP}gp/xp\` \`${secondXPCalculation.toLocaleString('en-US')}\` \`${(secondGoldCostXP * secondXPCalculation / 1000000).toFixed(2)}M\`\n**${((goldCostXP * XPCalculation / 1000000) + (secondGoldCostXP * secondXPCalculation / 1000000)).toFixed(2)}M**ㅤㅤ**${((goldCostXP * XPCalculation / 1000000 * 0.31) + (secondGoldCostXP * secondXPCalculation / 1000000 * 0.31)).toFixed(2)}$**`});
-
-                skillRow.splice(i + 1, 1);
-            } else if (endingLevel < to_level && endLevel[i + 1] < to_level) {
-                let secondXPCalculation = XPArray[endLevel[i + 1] - 1] - XPArray[startLevel[i + 1] - 1];
-                let thirdXPCalculation = XPArray[endLevel[i + 2] - 1] - XPArray[startLevel[i + 2] - 1];
-
-                if (endLevel[i + 1] > to_level) {
-                    endLevel[i + 1] = to_level;
-                }
-    
-                if (startLevel[i + 1] < from_level) {
-                    startLevel[i + 1] = from_level;
-                }
-
-                if (endLevel[i + 1] < from_level) {
-                    continue;
-                }
-    
-                if (startLevel[i + 1] > to_level) {
-                    continue;
-                }
-
-                if (endLevel[i + 2] > to_level) {
-                    endLevel[i + 2] = to_level;
-                }
-    
-                if (startLevel[i + 2] < from_level) {
-                    startLevel[i + 2] = from_level;
-                }
-
-                if (endLevel[i + 2] < from_level) {
-                    continue;
-                }
-    
-                if (startLevel[i + 2] > to_level) {
-                    continue;
-                }
-
-                addFields.push({name: `**${mainMethod}**`, value: `🧮 **${startLevel[i]}-${endLevel[i]}** - *${method[i]}*\n\`${gpxp[i]}gp/xp\` \`${XPCalculation.toLocaleString('en-US')}\` \`${(gpxp[i] * XPCalculation / 1000000).toFixed(2)}M\`\n🧮 **${startLevel[i + 1]}-${endLevel[i + 1]}** - *${method[i + 1].replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase())}*\n\`${gpxp[i + 1]}gp/xp\` \`${secondXPCalculation.toLocaleString('en-US')}\` \`${(gpxp[i + 1] * secondXPCalculation / 1000000).toFixed(2)}M\`\n🧮 **${startLevel[i + 2]}-${endLevel[i + 2]}** - *${method[i + 2].replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase())}*\n\`${gpxp[i + 2]}gp/xp\` \`${secondXPCalculation.toLocaleString('en-US')}\` \`${(gpxp[i + 2] * secondXPCalculation / 1000000).toFixed(2)}M\`\n**${((gpxp[i] * XPCalculation / 1000000) + (gpxp[i + 1] * secondXPCalculation / 1000000) + (gpxp[i + 2] * thirdXPCalculation / 1000000)).toFixed(2)}M**ㅤㅤ**${((gpxp[i] * XPCalculation / 1000000 * 0.31) + (gpxp[i + 1] * secondXPCalculation / 1000000 * 0.31) + (gpxp[i + 2] * thirdXPCalculation / 1000000 / 0.31)).toFixed(2)}$**`});
-                
-                skillRow.splice(i + 1, 1);
-                skillRow.splice(i + 2, 1);
-            } else {
-                addFields.push({name: `**${mainMethod}**`, value: `🧮 **${startingLevel}-${endingLevel}** - *${methodName}*\n\`${goldCostXP}gp/xp\` \`${XPCalculation.toLocaleString('en-US')}\` \`${(goldCostXP * XPCalculation / 1000000).toFixed(2)}M\`\n**${(goldCostXP * XPCalculation / 1000000).toFixed(2)}M**ㅤㅤ**${(goldCostXP * XPCalculation / 1000000 * 0.31).toFixed(2)}$**`});
-            }*/
         }
 
-        return await interaction.reply({
+        return await message.reply({
             embeds: [
                 new EmbedBuilder()
-                .setColor(ee.color)
+                .setColor(config.Skill_System.Skill_Embed.color)
                 .setTitle(`${actualSkill.charAt(0).toUpperCase() + actualSkill.slice(1)} Calculator`)
-                .setThumbnail('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/-Insert_image_here-.svg/800px--Insert_image_here-.svg.png')
+                .setThumbnail(config.Skill_System.Skill_Embed.thumbnail)
                 .addFields(addFields.length === 3 ? [{name: 'No methods available', value: 'No methods found!'}] : addFields)
+                .setFooter({text: config.Skill_System.Skill_Embed.footer.text, iconURL: config.Skill_System.Skill_Embed.footer.iconURL})
+                .setTimestamp()
             ],
-        })
-    }
-}
-
-/*
-
-Code used in this script has been written by PGTechnologies™
-This project has been licensed through PGTechnologies™, you are NOT permitted to take credit for this project.
-Require assistance with scripts? Join the discord and get help right away! - https://discord.gg/xQFFRzhJu2
-Original Developer - PGamingHD#0666
-
-*/
+        });
+    },
+};

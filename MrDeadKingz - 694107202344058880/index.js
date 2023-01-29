@@ -3,6 +3,8 @@
 const {
     Client,
     Collection,
+    GatewayIntentBits,
+    Partials
 } = require("discord.js");
 require('dotenv').config();
 
@@ -15,14 +17,22 @@ const client = new Client({
         parse: ["users", "roles", "everyone"], // "everyone", "roles", "users"
         repliedUser: false,
     },
-
+    waitGuildTimeout: 10000,
     intents: [
-        "Guilds",
-        "GuildMembers",
-        "GuildBans",
-        "GuildMessages",
-        "DirectMessages",
-        "GuildPresences"
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildBans,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.GuildPresences,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.GuildEmojisAndStickers
+    ],
+
+    partials: [
+        Partials.ActivityType,
     ],
 });
 //           --------------------<CONSTRUCTING CLIENT>--------------------
@@ -35,7 +45,9 @@ module.exports = client;
 //           --------------------<MODULE EXPORTS>--------------------
 
 //           --------------------<GLOBAL VARIABLES CONSTRUCTION>--------------------
+client.commands = new Collection();
 client.slashCommands = new Collection();
+client.cooldown = new Collection();
 client.config = require("./botconfig/config.json");
 //           --------------------<GLOBAL VARIABLES CONSTRUCTION>--------------------
 

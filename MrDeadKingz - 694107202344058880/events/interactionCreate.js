@@ -19,12 +19,15 @@ const donationInvoice = require("../schemas/donationInvoices");
 const shopPost = require("../schemas/shopPost");
 const dealRanking = require("../schemas/dealRankings");
 const finishedRanking = require("../schemas/finishedRankings");
-const {generateSnowflake, stringTemplateParser} = require("../handler/functions");
+const {generateSnowflake, stringTemplateParser, confirmWallet} = require("../handler/functions");
 const {createCanvas, loadImage} = require("@napi-rs/canvas");
 const axios = require("axios");
 require('dotenv').config();
 
 client.on("interactionCreate", async (interaction) => {
+
+    await confirmWallet(interaction.user);
+
     if (interaction.isCommand()) {
         const cmd = client.slashCommands.get(interaction.commandName);
         if (!cmd) {

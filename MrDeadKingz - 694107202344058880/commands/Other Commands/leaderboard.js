@@ -1,23 +1,26 @@
 const {
+    Message,
     Client,
-    EmbedBuilder,
-    ApplicationCommandOptionType
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    EmbedBuilder
 } = require("discord.js");
 const ee = require("../../botconfig/embed.json");
+const prettyMilliseconds = require('pretty-ms');
+const config = require('../../botconfig/config.json');
 const userData = require("../../schemas/userData");
-const config = require("../../botconfig/config.json");
-require('dotenv').config();
 
 module.exports = {
-    name: 'leaderboard',
-    description: 'Get the biggest donator, thanks! :D',
-
-    /** 
-     * @param {Client} client 
-     * @param {Message} message 
-     * @param {String[]} args 
+    name: "leaderboard",
+    aliases: ['lb', 'leaderstats', 'leader'],
+    /**
+     *
+     * @param {Client} client
+     * @param {Message} message
+     * @param {String[]} args
      */
-    run: async (client, interaction, args) => {
+    run: async (client, message, args, prefix) => {
         const userDonated = await userData.find().sort({
             totalDonated: -1
         }).limit(10);
@@ -36,7 +39,7 @@ module.exports = {
             });
     
     
-            return await interaction.reply({
+            return await message.reply({
                 embeds: [
                     new EmbedBuilder()
                     .setColor(config.Leaderboard_System.Leaderboard_Embed.color)
@@ -47,7 +50,7 @@ module.exports = {
                 ]
             })
         } else {
-            return await interaction.reply({
+            return await message.reply({
                 embeds: [
                     new EmbedBuilder()
                     .setColor(config.Leaderboard_System.Leaderboard_Embed_NOTFOUND.color)
@@ -57,14 +60,14 @@ module.exports = {
                 ]
             })
         }
-    }
-}
+    },
+};
 
 /*
 
-Code used in this script has been written by PGTechnologies™
-This project has been licensed through PGTechnologies™, you are NOT permitted to take credit for this project.
-Require assistance with scripts? Join the discord and get help right away! - https://discord.gg/xQFFRzhJu2
+Code used in this script has been written by original PizzaParadise developer - PGamingHD#0666
+Require assistance with scripts? Join the discord and get help right away! - https://discord.gg/pxySje4GPC
+Other than that, please do note that it is required if you are using this to mention the original developer
 Original Developer - PGamingHD#0666
 
 */

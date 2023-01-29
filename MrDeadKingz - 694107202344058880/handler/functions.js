@@ -1,3 +1,4 @@
+const userWallet = require("../schemas/userWallets");
 const FlakeId = require("flakeid");
 const flake = new FlakeId({
     mid: 45, //optional, define machine id
@@ -6,6 +7,9 @@ const flake = new FlakeId({
 
 module.exports.generateSnowflake = generateSnowflake;
 module.exports.stringTemplateParser = stringTemplateParser;
+module.exports.escapeRegex = escapeRegex;
+module.exports.specialParamsSplitter = specialParamsSplitter;
+module.exports.confirmWallet = confirmWallet;
 
 function stringTemplateParser(expression, valueObj) {
     const templateMatcher = /{\s?([^{}\s]*)\s?}/g;
@@ -16,8 +20,45 @@ function stringTemplateParser(expression, valueObj) {
     return text
 }
 
+function escapeRegex(str) {
+    try {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, `\\$&`);
+    } catch (e) {
+        console.log(String(e.stack).bgRed)
+    }
+}
+
 function generateSnowflake() {
     return flake.gen();
+}
+
+function specialParamsSplitter(str, splitter, argumentName) {
+    const string = str.split(splitter);
+    console.log(string)
+
+    if (string[0] === argumentName) {
+        return string[1]
+    }
+
+    return undefined;
+}
+
+async function confirmWallet(user) {
+    const usersWallet = await userWallet.findOne({
+        userId: user.id
+    });
+
+    if (!usersWallet) {
+        await userWallet.create({
+            userId: user.id,
+            wallet: {
+               oBalance: 0,
+               oSpent: 0,
+               Balance: 0,
+               Spent: 0 
+            }
+        })
+    }
 }
 
 /*
