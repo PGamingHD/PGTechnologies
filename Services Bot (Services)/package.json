@@ -1,0 +1,28 @@
+{
+  "name": "mrdeadkingz---694107202344058880",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/local-auth": "^2.1.0",
+    "@mongoosejs/double": "^0.3.0",
+    "@napi-rs/canvas": "^0.1.34",
+    "@top-gg/sdk": "^3.1.3",
+    "axios": "^1.2.3",
+    "discord.js": "^14.7.1",
+    "express": "^4.18.2",
+    "flakeid": "^1.0.0",
+    "glob": "^7.1.1",
+    "googleapis": "^105.0.0",
+    "mongoose": "^6.6.5",
+    "mongoose-long": "^0.6.0",
+    "n-readlines": "^1.0.1",
+    "prettier": "^2.8.3",
+    "topgg-autoposter": "^2.0.1"
+  }
+}

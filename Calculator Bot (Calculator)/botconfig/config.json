@@ -1,0 +1,82 @@
+{
+  "accessRoles": [
+    "1068666723273810092"
+  ],
+  "mainPrefix": "v!",
+  "status": {
+    "text": "trades",
+    "type": "WATCHING",
+    "_COMMENT_": "VALID TYPES: WATCHING, PLAYING, STREAMING, LISTENING",
+    "url": "https://twitch.tv/PGamingJR"
+  },
+  "Vote_System": {
+    "webhook_link": "WEBHOOK LINK HERE, WILL SEND NEW VOTES TO THIS WEBHOOK!",
+    "webhook_authorize": "epicGamers123!#fromtopggPost",
+    "webhook_port": 3000,
+    "vote_reward": 0.25,
+    "webhook": {
+      "title": "🎉 New Registered Vote 🎉",
+      "description": "**A new vote was registered by <@!${vote.user}>!**\n\n*User has been successfully automatically given their voting rewards, make sure to vote below to get your own rewards!*\n\n*Click [here](https://top.gg/bot/1011002384064970944/vote) to vote for us and get free $$!*",
+      "color": 2161667
+    }
+  },
+  "Discounts": [
+    {
+      "discount": "2%",
+      "discountRole": "1069340439632695386",
+      "discountUser": null,
+      "type": "role"
+    },
+    {
+      "discount": "4%",
+      "discountRole": "1069340453452914718",
+      "discountUser": null,
+      "type": "role"
+    },
+    {
+      "discount": "6%",
+      "discountRole": "1069340465457012926",
+      "discountUser": null,
+      "type": "role"
+    },
+    {
+      "discount": "10%",
+      "discountRole": "1069340478467735686",
+      "discountUser": null,
+      "type": "role"
+    },
+    {
+      "discount": "15%",
+      "discountRole": "1069340496167702761",
+      "discountUser": null,
+      "type": "role"
+    }
+  ],
+  "Skill_System": {
+    "Skill_Embed": {
+      "color": 2161667,
+      "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/-Insert_image_here-.svg/800px--Insert_image_here-.svg.png",
+      "gold_icon": "<:gold:1069288396926750880>",
+      "money_icon": "<:dollar:1069289195404800030>",
+      "xp_icon": "<:xp:1069290793564639292>",
+      "calculator_icon": ":abacus:",
+      "footer": {
+        "text": "Footer text here",
+        "iconURL": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/-Insert_image_here-.svg/800px--Insert_image_here-.svg.png"
+      }
+    }
+  },
+  "Quest_System": {
+    "Quest_Embed": {
+      "title": "Quest Calculator",
+      "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/-Insert_image_here-.svg/800px--Insert_image_here-.svg.png",
+      "color": 2161667,
+      "gold_icon": "<:gold:1069288396926750880>",
+      "money_icon": "<:dollar:1069289195404800030>",
+      "footer": {
+        "text": "Footer text here",
+        "iconURL": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/-Insert_image_here-.svg/800px--Insert_image_here-.svg.png"
+      }
+    }
+  }
+}
